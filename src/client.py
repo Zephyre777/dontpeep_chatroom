@@ -1,6 +1,7 @@
 import socket
 import sys
 from threading import Thread
+from utils import Client
 
 HEADER_LENGTH = 16
 
@@ -15,10 +16,21 @@ def send(msg, socket, encrypted): #generate header and send msg
     socket.send(msg_hdr+msg)
     
 def receive(socket):
-    msg_hdr = socket.recv(HEADER_LENGTH) #read header
+    #read msg type
+    msg_hdr_type = socket.recv(1) 
+    msg_type = str(msg_hdr_type) #decode msg length
+
+    #read header
+    msg_hdr = socket.recv(HEADER_LENGTH) 
     msg_len = int(msg_hdr.decode('utf-8').strip()) #decode msg length
-    msg = socket.recv(msg_len) #read msg
-    print("Receive: " + str(msg))
+
+    #read msg
+    msg = socket.recv(msg_len) 
+    if(msg_type == 'e'): #Msg is encrypted
+        print("Receive: " + str(msg))
+    elif(msg_type == 'r'):
+        client = Client(int(msg.decode('utf-8').strip())) #Initialize Client with p
+    
 
 def send_handler(socket):
     print("Type in your message")
@@ -55,6 +67,7 @@ if __name__ == '__main__':
     
     IP_address = str(sys.argv[1])
     Port = int(sys.argv[2])
-
+    
+    global client
     client_program(IP_address, Port)
     
